@@ -1,0 +1,26 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Build jar and push to acr
+
+on: workflow_dispatch
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Maven clean install 
+        uses: xlui/action-maven-cli@jdk8
+        with:
+          lifecycle: 'clean install'
+      
+      - uses: azure/docker-login@v1
+        with:
+          login-server: shikhardemoacr.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+      - run: |
+          docker build -t shikhardemoacr.azurecr.io/demo-spring-boot-app:latest .
+          docker push shikhardemoacr.azurecr.io/demo-spring-boot-app:latest
